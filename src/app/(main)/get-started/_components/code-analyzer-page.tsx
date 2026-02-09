@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -28,12 +29,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, CheckCircle, Clipboard, Clock, Cpu, FileWarning, Lightbulb, Terminal } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 const languages = ["python", "javascript", "typescript", "java", "c++", "html", "css"];
 
 const formSchema = z.object({
   language: z.string().min(1, { message: "Please select a language." }),
   code: z.string().min(10, { message: "Please enter at least 10 characters of code." }),
+  groqApiKey: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -48,6 +51,7 @@ export function CodeAnalyzerPage() {
     defaultValues: {
       language: "python",
       code: "",
+      groqApiKey: "",
     },
   });
 
@@ -130,6 +134,27 @@ export function CodeAnalyzerPage() {
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="groqApiKey"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Groq API Key (Optional)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="gsk_..."
+                        type="password"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      If provided, Groq will be used for analysis. This can be faster.
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

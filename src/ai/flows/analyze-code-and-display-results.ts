@@ -9,12 +9,15 @@
  * - AnalyzeCodeOutput - Return type for the analyzeCodeAndDisplayResults function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
+import { genkit } from 'genkit';
+import { groq } from 'genkitx-groq';
 
 const AnalyzeCodeInputSchema = z.object({
   language: z.string().describe('The programming language of the code.'),
   code: z.string().describe('The code to analyze.'),
+  groqApiKey: z.string().optional(),
 });
 export type AnalyzeCodeInput = z.infer<typeof AnalyzeCodeInputSchema>;
 
@@ -27,33 +30,47 @@ const AnalyzeCodeOutputSchema = z.object({
 });
 export type AnalyzeCodeOutput = z.infer<typeof AnalyzeCodeOutputSchema>;
 
-export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Promise<AnalyzeCodeOutput> {
-  return analyzeCodeAndDisplayResultsFlow(input);
-}
 
-const analyzeCodePrompt = ai.definePrompt({
-  name: 'analyzeCodePrompt',
-  input: {schema: AnalyzeCodeInputSchema},
-  output: {schema: AnalyzeCodeOutputSchema},
-  prompt: `You are a highly skilled software engineer specializing in code analysis and optimization. Given the following code, identify any errors, automatically fix them, estimate the time complexity, and estimate the space complexity. Return the information in JSON format.
+const promptText = `You are a highly skilled software engineer specializing in code analysis and optimization. Given the following code, identify any errors, automatically fix them, estimate the time complexity, and estimate the space complexity. Return the information in JSON format.
 
 Language: {{{language}}}
 Code:
 {{{code}}}
 
-Ensure that the \"status\" field is \"correct\" if no errors are found, and \"fixed\" if errors were fixed.
-If no errors are found, the \"errors\" and \"fixedCode\" fields should be empty.
-`,
-});
+Ensure that the "status" field is "correct" if no errors are found, and "fixed" if errors were fixed.
+If no errors are found, the "errors" and "fixedCode" fields should be empty.
+`;
 
-const analyzeCodeAndDisplayResultsFlow = ai.defineFlow(
-  {
-    name: 'analyzeCodeAndDisplayResultsFlow',
-    inputSchema: AnalyzeCodeInputSchema,
-    outputSchema: AnalyzeCodeOutputSchema,
-  },
-  async input => {
-    const {output} = await analyzeCodePrompt(input);
-    return output!;
+export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Promise<AnalyzeCodeOutput> {
+  const prompt = promptText
+    .replace('{{{language}}}', input.language)
+    .replace('{{{code}}}', input.code);
+
+  let response;
+
+  if (input.groqApiKey) {
+    const groqAi = genkit({
+      plugins: [groq({ apiKey: input.groqApiKey })],
+    });
+    response = await groqAi.generate({
+      model: 'gemma-7b-it',
+      prompt,
+      output: {
+        schema: AnalyzeCodeOutputSchema,
+      },
+    });
+  } else {
+    response = await ai.generate({
+      prompt,
+      output: {
+        schema: AnalyzeCodeOutputSchema,
+      },
+    });
   }
-);
+
+  if (!response.output) {
+    throw new Error('Failed to get analysis from AI.');
+  }
+
+  return response.output;
+}
