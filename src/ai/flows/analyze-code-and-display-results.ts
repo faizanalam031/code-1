@@ -9,8 +9,7 @@
  */
 
 import { z } from 'zod';
-import { genkit } from 'genkit';
-import { groq } from 'genkitx-groq';
+import { ai } from '@/ai/genkit';
 
 const AnalyzeCodeInputSchema = z.object({
   language: z.string().describe('The programming language of the code.'),
@@ -30,7 +29,7 @@ const AnalyzeCodeOutputSchema = z.object({
 export type AnalyzeCodeOutput = z.infer<typeof AnalyzeCodeOutputSchema>;
 
 
-const promptText = `You are the AI Code Review & Rewrite Agent, an expert software engineer specializing in code analysis and optimization using Llama 3.
+const promptText = `You are the AI Code Review & Rewrite Agent, an expert software engineer specializing in code analysis and optimization.
 Your task is to perform a comprehensive review of the provided code.
 
 Your analysis must cover the following areas:
@@ -62,17 +61,7 @@ export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Pro
     .replace('{{{language}}}', input.language)
     .replace('{{{code}}}', input.code);
 
-  const groqApiKey = process.env.GROQ_API_KEY;
-  if (!groqApiKey) {
-    throw new Error('GROQ_API_KEY is not set. Please add it to your .env file.');
-  }
-
-  const groqAi = genkit({
-    plugins: [groq({ apiKey: groqApiKey })],
-  });
-
-  const response = await groqAi.generate({
-    model: 'llama3-70b-8192',
+  const response = await ai.generate({
     prompt,
     output: {
       schema: AnalyzeCodeOutputSchema,
