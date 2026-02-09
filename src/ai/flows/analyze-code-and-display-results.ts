@@ -39,11 +39,11 @@ Your analysis must cover the following areas:
 4.  **Best Practices**: Check for adherence to language-specific best practices and general coding standards.
 
 Based on your analysis, provide the following in a JSON format:
--   \`bugs\`: A list of strings, where each string describes a detected bug.
+-   \`bugs\`: A list of strings. If you find any bugs, this indicates the code is incorrect. Each string in the list should describe a detected bug.
 -   \`performanceOptimizations\`: A list of strings with suggestions for performance improvements.
 -   \`securityVulnerabilities\`: A list of strings detailing potential security risks.
 -   \`bestPractices\`: A list of strings with comments on best practices.
--   \`rewrittenCode\`: Provide a completely rewritten version of the code that incorporates all your suggested improvements for bugs, performance, and security. The rewritten code should be clean, efficient, and secure. If no changes are necessary, return the original code.
+-   \`rewrittenCode\`: Provide a completely rewritten version of the code that incorporates all the suggested fixes and optimizations. If the code is incorrect, this rewritten code must be the corrected version. If no changes are necessary, return the original code.
 -   \`timeComplexity\`: A string estimating the time complexity (e.g., "O(n)").
 -   \`spaceComplexity\`: A string estimating the space complexity (e.g., "O(1)").
 
