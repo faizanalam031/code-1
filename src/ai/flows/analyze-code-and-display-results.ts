@@ -18,22 +18,26 @@ const AnalyzeCodeInputSchema = z.object({
 export type AnalyzeCodeInput = z.infer<typeof AnalyzeCodeInputSchema>;
 
 const AnalyzeCodeOutputSchema = z.object({
-  bugs: z.array(z.string()).describe('A list of detected bugs or logical errors.'),
+  bugs: z.array(z.string()).describe('A list of detected bugs or logical errors. If you find any bugs, this indicates the code is incorrect.'),
   performanceOptimizations: z.array(z.string()).describe('A list of suggestions for performance improvements.'),
   securityVulnerabilities: z.array(z.string()).describe('A list of potential security risks found in the code.'),
   bestPractices: z.array(z.string()).describe('A list of comments on adherence to best practices and coding standards.'),
-  rewrittenCode: z.string().describe('A rewritten version of the code incorporating all the suggested fixes and optimizations. If no changes are needed, return the original code.'),
+  rewrittenCode: z.string().describe('A rewritten version of the code incorporating all the suggested fixes and optimizations. If the code is incorrect, this rewritten code must be the corrected version. If no changes are needed, return the original code.'),
   timeComplexity: z.string().describe('The estimated time complexity of the code.'),
   spaceComplexity: z.string().describe('The estimated space complexity of the code.'),
 });
 export type AnalyzeCodeOutput = z.infer<typeof AnalyzeCodeOutputSchema>;
 
 
-const promptText = `You are the AI Code Review & Rewrite Agent, an expert software engineer specializing in code analysis and optimization.
+const codeReviewPrompt = ai.definePrompt({
+  name: 'codeReviewPrompt',
+  input: { schema: AnalyzeCodeInputSchema },
+  output: { schema: AnalyzeCodeOutputSchema },
+  prompt: `You are the AI Code Review & Rewrite Agent, an expert software engineer specializing in code analysis and optimization.
 Your task is to perform a comprehensive review of the provided code.
 
 Your analysis must cover the following areas:
-1.  **Bug Detection**: Identify any potential bugs, logical errors, or edge cases that might lead to unexpected behavior.
+1.  **Bug Detection**: Identify any potential bugs, logical errors, or edge cases that might lead to unexpected behavior. If you find any bugs, this indicates the code is incorrect.
 2.  **Performance Optimization**: Analyze the code for performance bottlenecks and suggest optimizations.
 3.  **Security Vulnerabilities**: Scan for common security risks (e.g., injection flaws, insecure handling of data).
 4.  **Best Practices**: Check for adherence to language-specific best practices and general coding standards.
@@ -54,23 +58,15 @@ Code:
 \`\`\`{{{language}}}
 {{{code}}}
 \`\`\`
-`;
+`,
+});
 
 export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Promise<AnalyzeCodeOutput> {
-  const prompt = promptText
-    .replace('{{{language}}}', input.language)
-    .replace('{{{code}}}', input.code);
+  const {output} = await codeReviewPrompt(input);
 
-  const response = await ai.generate({
-    prompt,
-    output: {
-      schema: AnalyzeCodeOutputSchema,
-    },
-  });
-
-  if (!response.output) {
+  if (!output) {
     throw new Error('Failed to get analysis from AI.');
   }
 
-  return response.output;
+  return output;
 }
