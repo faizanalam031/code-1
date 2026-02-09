@@ -81,10 +81,18 @@ export function CodeAnalyzerPage() {
       setResult(analysisResult);
     } catch (e: any) {
       console.error(e);
+      let title = "Analysis Failed";
+      let description = e.message || "An unexpected error occurred. Please try again.";
+
+      if (e.message && (e.message.includes('429') || e.message.includes('Quota exceeded'))) {
+        title = "Rate Limit Exceeded";
+        description = "You've made too many requests in a short period. Please wait for a minute and try again. This is a temporary restriction of the free plan.";
+      }
+      
       toast({
         variant: "destructive",
-        title: "Analysis Failed",
-        description: e.message || "An unexpected error occurred. Please try again.",
+        title: title,
+        description: description,
       });
     } finally {
       setIsLoading(false);
