@@ -9,7 +9,6 @@
  * - AnalyzeCodeOutput - Return type for the analyzeCodeAndDisplayResults function.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { genkit } from 'genkit';
 import { groq } from 'genkitx-groq';
@@ -45,28 +44,23 @@ export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Pro
     .replace('{{{language}}}', input.language)
     .replace('{{{code}}}', input.code);
 
-  let response;
   const groqApiKey = process.env.GROQ_API_KEY;
 
-  if (groqApiKey) {
-    const groqAi = genkit({
-      plugins: [groq({ apiKey: groqApiKey })],
-    });
-    response = await groqAi.generate({
-      model: 'gemma-7b-it',
-      prompt,
-      output: {
-        schema: AnalyzeCodeOutputSchema,
-      },
-    });
-  } else {
-    response = await ai.generate({
-      prompt,
-      output: {
-        schema: AnalyzeCodeOutputSchema,
-      },
-    });
+  if (!groqApiKey) {
+    throw new Error('GROQ_API_KEY is not set in the environment variables. Please add it to your .env file.');
   }
+
+  const groqAi = genkit({
+    plugins: [groq({ apiKey: groqApiKey })],
+  });
+
+  const response = await groqAi.generate({
+    model: 'gemma-7b-it',
+    prompt,
+    output: {
+      schema: AnalyzeCodeOutputSchema,
+    },
+  });
 
   if (!response.output) {
     throw new Error('Failed to get analysis from AI.');
