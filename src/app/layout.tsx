@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'CodeRefine AI',
-  description: 'AI-powered code error detection and optimization tool.',
+  title: 'AI Code Review & Rewrite Agent',
+  description: 'Real-time, AI-powered code analysis, optimization, and rewriting.',
 };
 
 export default function RootLayout({

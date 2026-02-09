@@ -1,23 +1,23 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Zap, Code } from "lucide-react";
+import { Bug, Gauge, ShieldCheck } from "lucide-react";
 
 const features = [
   {
-    icon: <Zap className="h-8 w-8 text-primary" />,
-    title: "Instant Error Detection",
-    description: "Our AI immediately spots syntax and logical errors in your code."
+    icon: <Bug className="h-8 w-8 text-destructive" />,
+    title: "Bug & Error Detection",
+    description: "Our AI immediately spots syntax errors, logical flaws, and edge cases."
   },
   {
-    icon: <CheckCircle className="h-8 w-8 text-green-500" />,
-    title: "Automatic Fixes",
-    description: "Get smart, one-click corrections to streamline your debugging process."
+    icon: <Gauge className="h-8 w-8 text-blue-500" />,
+    title: "Full-Spectrum Analysis",
+    description: "From performance bottlenecks to security vulnerabilities, get a complete picture of your code's health."
   },
   {
-    icon: <Code className="h-8 w-8 text-secondary-foreground" />,
-    title: "Complexity Analysis",
-    description: "Understand the efficiency of your code with automatic time and space complexity ratings."
+    icon: <ShieldCheck className="h-8 w-8 text-green-500" />,
+    title: "Automated Code Rewriting",
+    description: "Receive optimized, secure, and clean code, rewritten by AI and ready to deploy."
   }
 ]
 
@@ -30,10 +30,10 @@ export default function HomePage() {
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-5xl xl:text-6xl/none font-headline">
-                  Refine Your Code with the Power of AI
+                  AI-Powered Code Review and Modernization
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                  CodeRefine is an AI-powered tool that automatically detects errors, suggests fixes, and analyzes the complexity of your code.
+                  Get instant, comprehensive code reviews. Our AI agent, powered by Llama 3 and Groq, detects bugs, security risks, and performance issues, then rewrites your code to be more efficient and secure.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
@@ -70,10 +70,10 @@ export default function HomePage() {
                 Key Features
               </div>
               <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                A Smarter Way to Code
+                Intelligent Analysis, Instant Improvements
               </h2>
               <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Focus on building, not debugging. Our intelligent tools help you write better code, faster.
+                Focus on building, not on tedious code reviews. Our intelligent tools help you write better, more secure code, faster than ever before.
               </p>
             </div>
           </div>

@@ -1,10 +1,9 @@
 'use server';
 
 /**
- * @fileOverview This file defines a Genkit flow for analyzing code, detecting and fixing errors,
- * and estimating time and space complexity.
+ * @fileOverview This file defines a Genkit flow for performing a comprehensive AI code review.
  *
- * - analyzeCodeAndDisplayResults - Analyzes code, fixes errors, and estimates complexity.
+ * - analyzeCodeAndDisplayResults - Analyzes code for bugs, performance, security, and best practices, and provides a rewritten version.
  * - AnalyzeCodeInput - Input type for the analyzeCodeAndDisplayResults function.
  * - AnalyzeCodeOutput - Return type for the analyzeCodeAndDisplayResults function.
  */
@@ -20,23 +19,42 @@ const AnalyzeCodeInputSchema = z.object({
 export type AnalyzeCodeInput = z.infer<typeof AnalyzeCodeInputSchema>;
 
 const AnalyzeCodeOutputSchema = z.object({
-  status: z.enum(['correct', 'fixed']).describe('The status of the code analysis: correct if no errors were found, fixed if errors were automatically fixed.'),
-  errors: z.array(z.string()).describe('A list of errors found in the code, if any.'),
-  fixedCode: z.string().describe('The corrected code, if any errors were found.'),
+  bugs: z.array(z.string()).describe('A list of detected bugs or logical errors.'),
+  performanceOptimizations: z.array(z.string()).describe('A list of suggestions for performance improvements.'),
+  securityVulnerabilities: z.array(z.string()).describe('A list of potential security risks found in the code.'),
+  bestPractices: z.array(z.string()).describe('A list of comments on adherence to best practices and coding standards.'),
+  rewrittenCode: z.string().describe('A rewritten version of the code incorporating all the suggested fixes and optimizations. If no changes are needed, return the original code.'),
   timeComplexity: z.string().describe('The estimated time complexity of the code.'),
   spaceComplexity: z.string().describe('The estimated space complexity of the code.'),
 });
 export type AnalyzeCodeOutput = z.infer<typeof AnalyzeCodeOutputSchema>;
 
 
-const promptText = `You are a highly skilled software engineer specializing in code analysis and optimization. Given the following code, identify any errors, automatically fix them, estimate the time complexity, and estimate the space complexity. Return the information in JSON format.
+const promptText = `You are the AI Code Review & Rewrite Agent, an expert software engineer specializing in code analysis and optimization using Llama 3.
+Your task is to perform a comprehensive review of the provided code.
+
+Your analysis must cover the following areas:
+1.  **Bug Detection**: Identify any potential bugs, logical errors, or edge cases that might lead to unexpected behavior.
+2.  **Performance Optimization**: Analyze the code for performance bottlenecks and suggest optimizations.
+3.  **Security Vulnerabilities**: Scan for common security risks (e.g., injection flaws, insecure handling of data).
+4.  **Best Practices**: Check for adherence to language-specific best practices and general coding standards.
+
+Based on your analysis, provide the following in a JSON format:
+-   \`bugs\`: A list of strings, where each string describes a detected bug.
+-   \`performanceOptimizations\`: A list of strings with suggestions for performance improvements.
+-   \`securityVulnerabilities\`: A list of strings detailing potential security risks.
+-   \`bestPractices\`: A list of strings with comments on best practices.
+-   \`rewrittenCode\`: Provide a completely rewritten version of the code that incorporates all your suggested improvements for bugs, performance, and security. The rewritten code should be clean, efficient, and secure. If no changes are necessary, return the original code.
+-   \`timeComplexity\`: A string estimating the time complexity (e.g., "O(n)").
+-   \`spaceComplexity\`: A string estimating the space complexity (e.g., "O(1)").
+
+If you find no issues in a category, return an empty array for it.
 
 Language: {{{language}}}
 Code:
+\`\`\`{{{language}}}
 {{{code}}}
-
-Ensure that the "status" field is "correct" if no errors are found, and "fixed" if errors were fixed.
-If no errors are found, the "errors" and "fixedCode" fields should be empty.
+\`\`\`
 `;
 
 export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Promise<AnalyzeCodeOutput> {
@@ -45,9 +63,8 @@ export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Pro
     .replace('{{{code}}}', input.code);
 
   const groqApiKey = process.env.GROQ_API_KEY;
-
   if (!groqApiKey) {
-    throw new Error('GROQ_API_KEY is not set in the environment variables. Please add it to your .env file.');
+    throw new Error('GROQ_API_KEY is not set. Please add it to your .env file.');
   }
 
   const groqAi = genkit({
@@ -55,7 +72,7 @@ export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Pro
   });
 
   const response = await groqAi.generate({
-    model: 'gemma-7b-it',
+    model: 'llama3-70b-8192',
     prompt,
     output: {
       schema: AnalyzeCodeOutputSchema,

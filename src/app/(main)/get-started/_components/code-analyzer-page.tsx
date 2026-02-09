@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,10 +26,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, CheckCircle, Clipboard, Clock, Cpu, FileWarning, Lightbulb, Terminal } from "lucide-react";
+import { Bug, Clipboard, Clock, Cpu, Gauge, Shield, ThumbsUp, Terminal, Bot } from "lucide-react";
 
-const languages = ["python", "javascript", "typescript", "java", "c++", "html", "css"];
+const languages = ["python", "javascript", "typescript", "java", "c++", "html", "css", "go", "rust", "csharp"];
 
 const formSchema = z.object({
   language: z.string().min(1, { message: "Please select a language." }),
@@ -38,6 +36,29 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+const AnalysisSection = ({ title, icon, data }: { title: string; icon: React.ReactNode; data: string[] | undefined }) => {
+  if (!data || data.length === 0) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          {icon}
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
+          {data.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export function CodeAnalyzerPage() {
   const [result, setResult] = useState<AnalyzeCodeOutput | null>(null);
@@ -58,12 +79,12 @@ export function CodeAnalyzerPage() {
     try {
       const analysisResult = await analyzeCodeAndDisplayResults(data);
       setResult(analysisResult);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       toast({
         variant: "destructive",
         title: "Analysis Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: e.message || "An unexpected error occurred. Please try again.",
       });
     } finally {
       setIsLoading(false);
@@ -74,7 +95,7 @@ export function CodeAnalyzerPage() {
     navigator.clipboard.writeText(text).then(() => {
       toast({
         title: "Copied to clipboard!",
-        description: "The fixed code has been copied.",
+        description: "The rewritten code has been copied.",
       });
     }).catch(err => {
       console.error('Failed to copy text: ', err);
@@ -86,12 +107,14 @@ export function CodeAnalyzerPage() {
     });
   };
 
+  const hasIssues = result && (result.bugs.length > 0 || result.performanceOptimizations.length > 0 || result.securityVulnerabilities.length > 0 || result.bestPractices.length > 0)
+
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <div className="grid gap-8 md:grid-cols-2">
+      <div className="grid gap-12 md:grid-cols-2">
         {/* Left Column: Code Editor */}
         <div className="space-y-4">
-          <h1 className="text-3xl font-bold font-headline">Code Analyzer</h1>
+          <h1 className="text-3xl font-bold font-headline flex items-center gap-2"><Bot /> AI Code Review & Rewrite Agent</h1>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -150,40 +173,25 @@ export function CodeAnalyzerPage() {
                 {!isLoading && !result && <InitialState />}
                 {!isLoading && result && (
                     <div className="space-y-6">
-                        {result.status === 'correct' && (
-                             <Alert className="bg-green-500/10 border-green-500/30">
-                                <CheckCircle className="h-4 w-4 text-green-500" />
-                                <AlertTitle className="text-green-500">Code is Correct!</AlertTitle>
-                                <AlertDescription>
-                                No errors were found in your code.
-                                </AlertDescription>
-                            </Alert>
-                        )}
-                        {result.status === 'fixed' && result.errors.length > 0 && (
-                             <Alert variant="destructive">
-                                <FileWarning className="h-4 w-4" />
-                                <AlertTitle>Errors Detected</AlertTitle>
-                                <AlertDescription>
-                                    <ul className="list-disc pl-5 mt-2">
-                                        {result.errors.map((error, index) => (
-                                            <li key={index}>{error}</li>
-                                        ))}
-                                    </ul>
-                                </AlertDescription>
-                            </Alert>
-                        )}
-
-                        {result.status === 'fixed' && result.fixedCode && (
+                      
+                        <div className="space-y-4">
+                          <AnalysisSection title="Bugs Detected" icon={<Bug className="text-destructive" />} data={result.bugs} />
+                          <AnalysisSection title="Performance Optimizations" icon={<Gauge className="text-blue-500" />} data={result.performanceOptimizations} />
+                          <AnalysisSection title="Security Vulnerabilities" icon={<Shield className="text-green-500" />} data={result.securityVulnerabilities} />
+                          <AnalysisSection title="Best Practices" icon={<ThumbsUp className="text-yellow-500" />} data={result.bestPractices} />
+                        </div>
+                        
+                        {result.rewrittenCode && (
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-lg font-semibold flex items-center gap-2"><Lightbulb className="text-accent" /> Fixed Code</h3>
-                                    <Button variant="ghost" size="icon" onClick={() => handleCopy(result.fixedCode || '')}>
+                                    <h3 className="text-lg font-semibold flex items-center gap-2">Rewritten Code</h3>
+                                    <Button variant="ghost" size="icon" onClick={() => handleCopy(result.rewrittenCode || '')}>
                                         <Clipboard className="h-4 w-4" />
                                     </Button>
                                 </div>
                                 <Textarea
                                 readOnly
-                                value={result.fixedCode}
+                                value={result.rewrittenCode}
                                 className="h-64 font-mono bg-background/70"
                                 />
                            </div>
@@ -207,6 +215,15 @@ export function CodeAnalyzerPage() {
                                 </CardContent>
                             </Card>
                         </div>
+
+                         {!hasIssues && (
+                            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                                <ThumbsUp className="h-16 w-16 mb-4 text-green-500"/>
+                                <h3 className="text-lg font-semibold text-foreground">Excellent Code!</h3>
+                                <p>Our AI agent found no issues. The rewritten code is the same as the original.</p>
+                            </div>
+                         )}
+
                     </div>
                 )}
             </div>
@@ -218,7 +235,10 @@ export function CodeAnalyzerPage() {
 
 const ResultsSkeleton = () => (
     <div className="space-y-6 animate-pulse">
-        <Skeleton className="h-12 w-full" />
+        <div className="space-y-4">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
         <div className="space-y-2">
             <Skeleton className="h-8 w-1/3" />
             <Skeleton className="h-64 w-full" />
@@ -234,6 +254,6 @@ const InitialState = () => (
     <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
         <Terminal className="h-16 w-16 mb-4"/>
         <h3 className="text-lg font-semibold text-foreground">Awaiting Analysis</h3>
-        <p>Your code analysis results will appear here.</p>
+        <p>Your comprehensive code analysis will appear here.</p>
     </div>
 )

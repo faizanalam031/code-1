@@ -1,28 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CodeXml, ListChecks, TestTube2, Languages } from "lucide-react";
+import { Bug, Gauge, ShieldCheck, ThumbsUp, Languages, TestTube2 } from "lucide-react";
 
 export default function DashboardPage() {
   return (
     <div className="container py-12">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight font-headline">Dashboard</h1>
+        <h1 className="text-4xl font-bold tracking-tight font-headline">Agent Dashboard</h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          Welcome to your CodeRefine AI dashboard. Here's everything you need to know to get started.
+          Welcome to your AI Code Review & Rewrite Agent. Here's how to get started.
         </p>
       </div>
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         <Card className="hover:border-primary transition-colors">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <ListChecks className="text-primary" />
-              Core Features
+              <ThumbsUp className="text-primary" />
+              Core Analysis Features
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li><span className="font-semibold text-foreground">Error Detection:</span> Identifies syntax and logic errors.</li>
-              <li><span className="font-semibold text-foreground">Automatic Correction:</span> Provides instant code fixes.</li>
-              <li><span className="font-semibold text-foreground">Complexity Analysis:</span> Estimates Time & Space complexity.</li>
+              <li><span className="font-semibold text-foreground flex items-center gap-2"><Bug size={16} className="text-destructive"/>Bug Detection:</span> Identifies syntax and logic errors.</li>
+              <li><span className="font-semibold text-foreground flex items-center gap-2"><Gauge size={16} className="text-blue-500"/>Performance Optimization:</span> Finds bottlenecks and suggests improvements.</li>
+              <li><span className="font-semibold text-foreground flex items-center gap-2"><ShieldCheck size={16} className="text-green-500"/>Security Checks:</span> Scans for common vulnerabilities.</li>
+              <li><span className="font-semibold text-foreground flex items-center gap-2"><ThumbsUp size={16} className="text-yellow-500"/>Best Practices:</span> Ensures code meets modern standards.</li>
             </ul>
           </CardContent>
         </Card>
@@ -53,7 +54,7 @@ export default function DashboardPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold">3</div>
               <div>
                 <h3 className="font-semibold">Get Results</h3>
-                <p className="text-muted-foreground text-sm">Review the analysis, apply fixes, and check complexity scores.</p>
+                <p className="text-muted-foreground text-sm">Review the full analysis and use the rewritten code.</p>
               </div>
             </div>
           </CardContent>
