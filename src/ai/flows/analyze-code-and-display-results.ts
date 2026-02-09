@@ -17,7 +17,6 @@ import { groq } from 'genkitx-groq';
 const AnalyzeCodeInputSchema = z.object({
   language: z.string().describe('The programming language of the code.'),
   code: z.string().describe('The code to analyze.'),
-  groqApiKey: z.string().optional(),
 });
 export type AnalyzeCodeInput = z.infer<typeof AnalyzeCodeInputSchema>;
 
@@ -47,10 +46,11 @@ export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Pro
     .replace('{{{code}}}', input.code);
 
   let response;
+  const groqApiKey = process.env.GROQ_API_KEY;
 
-  if (input.groqApiKey) {
+  if (groqApiKey) {
     const groqAi = genkit({
-      plugins: [groq({ apiKey: input.groqApiKey })],
+      plugins: [groq({ apiKey: groqApiKey })],
     });
     response = await groqAi.generate({
       model: 'gemma-7b-it',
