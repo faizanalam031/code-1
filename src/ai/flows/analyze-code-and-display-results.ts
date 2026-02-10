@@ -10,6 +10,7 @@
 
 import { z } from 'zod';
 import { ai } from '@/ai/genkit';
+import { analyzeCodeLocally } from '@/ai/local-analysis';
 
 const AnalyzeCodeInputSchema = z.object({
   language: z.string().describe('The programming language of the code.'),
@@ -62,11 +63,26 @@ Code:
 });
 
 export async function analyzeCodeAndDisplayResults(input: AnalyzeCodeInput): Promise<AnalyzeCodeOutput> {
-  const {output} = await codeReviewPrompt(input);
+  try {
+    const {output} = await codeReviewPrompt(input);
 
-  if (!output) {
-    throw new Error('Failed to get analysis from AI.');
+    if (!output) {
+      throw new Error('Failed to get analysis from AI.');
+    }
+
+    return output;
+  } catch (error: any) {
+    // If Gemini API fails due to missing key or other issues, fall back to local analysis
+    if (error.message?.includes('FAILED_PRECONDITION') || 
+        error.message?.includes('API key') || 
+        error.message?.includes('GEMINI_API_KEY') ||
+        error.message?.includes('GOOGLE_API_KEY')) {
+      console.warn('Gemini API not available, falling back to local analysis...');
+      return analyzeCodeLocally(input);
+    }
+    
+    // For other errors, also fallback to local analysis
+    console.warn('AI analysis failed, falling back to local analysis...', error);
+    return analyzeCodeLocally(input);
   }
-
-  return output;
 }

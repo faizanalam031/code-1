@@ -115,7 +115,8 @@ export function CodeAnalyzerPage() {
     });
   };
 
-  const hasIssues = result && (result.bugs.length > 0 || result.performanceOptimizations.length > 0 || result.securityVulnerabilities.length > 0 || result.bestPractices.length > 0)
+  const hasIssues = result && (result.bugs.length > 0 || result.securityVulnerabilities.length > 0);
+  const codeState = hasIssues ? 'incorrect' : 'correct';
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -188,11 +189,42 @@ export function CodeAnalyzerPage() {
                           <AnalysisSection title="Security Vulnerabilities" icon={<Shield className="text-green-500" />} data={result.securityVulnerabilities} />
                           <AnalysisSection title="Best Practices" icon={<ThumbsUp className="text-yellow-500" />} data={result.bestPractices} />
                         </div>
+
+                        {hasIssues && (
+                            <div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                                        <Terminal className="h-4 w-4" />
+                                        Incorrect Code (Current)
+                                    </h3>
+                                    <Button variant="ghost" size="icon" onClick={() => handleCopy(form.getValues('code'))}>
+                                        <Clipboard className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <Textarea
+                                readOnly
+                                value={form.getValues('code')}
+                                className="h-48 font-mono bg-red-950/20 border-red-500/30 text-sm"
+                                />
+                           </div>
+                        )}
                         
                         {result.rewrittenCode && (
                             <div>
                                 <div className="flex justify-between items-center mb-2">
-                                    <h3 className="text-lg font-semibold flex items-center gap-2">Rewritten Code</h3>
+                                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                                        {hasIssues ? (
+                                            <>
+                                                <Terminal className="h-4 w-4 text-green-500" />
+                                                Corrected Code (Rewritten)
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Terminal className="h-4 w-4 text-green-500" />
+                                                Code Output
+                                            </>
+                                        )}
+                                    </h3>
                                     <Button variant="ghost" size="icon" onClick={() => handleCopy(result.rewrittenCode || '')}>
                                         <Clipboard className="h-4 w-4" />
                                     </Button>
@@ -200,7 +232,7 @@ export function CodeAnalyzerPage() {
                                 <Textarea
                                 readOnly
                                 value={result.rewrittenCode}
-                                className="h-64 font-mono bg-background/70"
+                                className={`h-48 font-mono ${hasIssues ? 'bg-green-950/20 border-green-500/30' : 'bg-background/70'} text-sm`}
                                 />
                            </div>
                         )}
@@ -225,10 +257,10 @@ export function CodeAnalyzerPage() {
                         </div>
 
                          {!hasIssues && (
-                            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
+                            <div className="flex flex-col items-center justify-center text-center text-muted-foreground p-8 border rounded-lg border-green-500/30 bg-green-950/10">
                                 <ThumbsUp className="h-16 w-16 mb-4 text-green-500"/>
-                                <h3 className="text-lg font-semibold text-foreground">Excellent Code!</h3>
-                                <p>Our AI agent found no issues. The rewritten code is the same as the original.</p>
+                                <h3 className="text-lg font-semibold text-foreground">✓ Code is Correct!</h3>
+                                <p>No issues found. The code follows best practices and runs efficiently.</p>
                             </div>
                          )}
 
